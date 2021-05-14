@@ -19,13 +19,14 @@ sleep 1
 
 # process monitoring data
 jq '.sockets[] | .consumption' data/energy_data.json > data/energy_data.txt
+jq '.host.timestamp' data/energy_data.json > data/time_data.txt
 awk -e '{print $1}' < data/load_average.txt > data/load_average2.txt
 sed -e '1,3d' < data/sys.txt | sed -e '$ d' | awk -e '{print $13}' > data/sys2.txt
 paste -d ',' data/time.txt data/sys2.txt data/load_average2.txt > data/system_data.csv
 
-first=$(head -n 1 data/time.txt)
-for ((i=0; i<$((5 * $timeout)); i++)); do echo $(($first + i * 100)); done > data/time_data.txt
-paste -d ',' data/time_data.txt data/energy_data.txt
+# first=$(head -n 1 data/time.txt)
+# for ((i=0; i<$((2 * $timeout)); i++)); do echo $(($first + i * 500)); done > data/time_data.txt
+paste -d ',' data/time_data.txt data/energy_data.txt > data/energy_data.csv
 # rm data/time.txt data/energy_data.txt data/sys.txt data/sys2.txt data/load_average.txt data/load_average2.txt
 
 

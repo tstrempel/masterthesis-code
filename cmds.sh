@@ -5,10 +5,11 @@
 
 timeout=10
 step=1
+scaphandre_step=100000000
 
 # get monitoring data
 # energy data, timestamps, load average, system stat (cpu util etc.)
-/home/tstrempel/git/scaphandre/target/release/scaphandre --no-header json -t $timeout -s 0 -n 200000000 > data/energy_data.json &
+/home/tstrempel/git/scaphandre/target/release/scaphandre --no-header json -t $timeout -s 0 -n $scaphandre_step > data/energy_data.json &
 for ((i=1; i<=$timeout; i++)); do date +"+%s%3N"; sleep $step; done > data/time.txt &
 for ((i=1; i<=$timeout; i++)); do cat /proc/loadavg; sleep $step; done > data/load_average.txt &
 # vmstat $step $timeout > data/sys.txt &
@@ -20,15 +21,18 @@ sleep 1
 # process monitoring data
 jq '.sockets[] | .consumption' data/energy_data.json > data/energy_data.txt
 jq '.host.timestamp' data/energy_data.json > data/time_data.txt
+jq '.consumers[] | select(.exe=="/usr/share/code/code") | .consumption' data/energy_data.json > data/app.txt
+# paste -d ',' "$(jq '. | select(.consumers[].exe=="/usr/share/code/code") | .host.timestamp' data/energy_data.json)" "$(jq '.consumers[] | select(.exe=="/usr/share/code/code") | .consumption' data/energy_data.json)" > app.csv
+
 awk -e '{print $1}' < data/load_average.txt > data/load_average2.txt
 sed -e '1,3d' < data/sys.txt | sed -e '$ d' | awk -e '{print $13}' > data/sys2.txt
-paste -d ',' data/time.txt data/sys2.txt data/load_average2.txt > data/system_data.csv
+echo "timestamp,socket_idle,load_average" > data/system_data.csv
+paste -d ',' data/time.txt data/sys2.txt data/load_average2.txt >> data/system_data.csv
 
 # first=$(head -n 1 data/time.txt)
 # for ((i=0; i<$((2 * $timeout)); i++)); do echo $(($first + i * 500)); done > data/time_data.txt
-paste -d ',' data/time_data.txt data/energy_data.txt > data/energy_data.csv
+echo "timestamp,socket_power,app_power" > data/energy_data.csv
+paste -d ',' data/time_data.txt data/energy_data.txt data/app.txt >> data/energy_data.csv
 # rm data/time.txt data/energy_data.txt data/sys.txt data/sys2.txt data/load_average.txt data/load_average2.txt
 
-
-# 1 min load average
-# cat /proc/loadavg | awk -e '{print $1}' > load_average.txt
+python evaluation.py

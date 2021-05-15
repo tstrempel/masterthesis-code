@@ -1,11 +1,17 @@
-import json
+import numpy as np
 import pandas as pd
-from pprint import pprint
+import matplotlib.pyplot as plt
+from datetime import datetime
 
-with open('res.json', 'r') as f:
-    pprint(pd.read_json(json.dumps(json.load(f)), orient='records'))
+energy_data = pd.read_csv("data/energy_data.csv")
+energy_data['timestamp'] = energy_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
+energy_data['socket_power'] = energy_data['socket_power'].apply(lambda x: x/1000000.0)
+energy_data['app_power'] = energy_data['app_power'].apply(lambda x: x/1000000.0)
 
-
-with open('pretty.json', 'r') as handle:
-    data = json.load(handle)
-
+plt.plot(energy_data['timestamp'], energy_data['app_power'])
+plt.plot(energy_data['timestamp'], energy_data['socket_power'])
+plt.xlabel("Timestamp")
+plt.ylabel("Socket power consumption in Watt")
+locs, labels = plt.xticks()
+plt.xticks([energy_data['timestamp'][1], energy_data['timestamp'][len(energy_data)-1]])
+plt.show()

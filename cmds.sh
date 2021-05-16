@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# pip install jsbeautifier
 # get monitoring data
 # ( /home/tstrempel/git/scaphandre/target/release/scaphandre --no-header json -t 10 > energy_data.json ; for i in {1..10}; do date +"%T.%3N"; cat /proc/loadavg ; sleep 1; done > load_average.txt ) | parallel
 
@@ -18,7 +19,7 @@ mpstat $step $timeout > data/sys.txt &
 sleep $timeout
 sleep 1
 
-# process monitoring data
+# process monitoring datai
 jq '.sockets[] | .consumption' data/energy_data.json > data/energy_data.txt
 jq '.host.timestamp' data/energy_data.json > data/time_data.txt
 jq '.consumers[] | select(.exe=="/usr/share/code/code") | .consumption' data/energy_data.json > data/app.txt
@@ -35,4 +36,5 @@ echo "timestamp,socket_power,app_power" > data/energy_data.csv
 paste -d ',' data/time_data.txt data/energy_data.txt data/app.txt >> data/energy_data.csv
 # rm data/time.txt data/energy_data.txt data/sys.txt data/sys2.txt data/load_average.txt data/load_average2.txt
 
+js-beautify data/energy_data.json > data/energy_data_beautified.json
 python evaluation.py

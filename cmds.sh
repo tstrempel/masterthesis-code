@@ -4,9 +4,9 @@
 # get monitoring data
 # ( /home/tstrempel/git/scaphandre/target/release/scaphandre --no-header json -t 10 > energy_data.json ; for i in {1..10}; do date +"%T.%3N"; cat /proc/loadavg ; sleep 1; done > load_average.txt ) | parallel
 
-timeout=10
+timeout=20
 step=1
-scaphandre_step=100000000
+scaphandre_step=200000000
 
 # get monitoring data
 # energy data, timestamps, load average, system stat (cpu util etc.)

@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 import jq
-from pandas._libs.tslibs import Timestamp
+import os
 
 # read in JSON as text as python json can't parse multiple JSON objects at a time
 with open('data/energy_data_beautified.json') as json_file:
@@ -74,4 +74,26 @@ plt.plot(system_data['timestamp'], system_data['load_average'], label="Load Aver
 plt.legend()
 plt.grid()
 
-plt.show()
+# plt.show()
+
+app_set = set()
+apps = iter(jq.compile(".consumers[].exe").input(text=data))
+for item in apps:
+    if item not in app_set and not item == "":
+        # app_set.add(os.path.basename(os.path.normpath(item)))
+        app_set.add(item)
+
+print(app_set)
+
+
+#app_dict = dict()
+#for app in app_set:
+#    df_tmp = pd.DataFrame(columns = ['timestamp', 'consumption'])
+#    for app_result in iter(jq.compile('select(.consumers[].exe=="' + app + '")').input(text=data)):
+#        res = next((sub for sub in app_result['consumers'] if sub['exe'] == app), None)
+#        new_row = {'timestamp': app_result['host']['timestamp'], 'consumption': res['consumption']}
+#        df_tmp = df_tmp.append(new_row, ignore_index=True)
+#    df_tmp.drop_duplicates(keep='first', inplace=True)
+#    app_dict[os.path.basename(os.path.normpath(app))] = df_tmp
+
+#print(app_dict)

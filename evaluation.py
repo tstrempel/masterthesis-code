@@ -22,8 +22,6 @@ for item,power_item in zip(iterator, power_iterator):
 df_app = pd.DataFrame(columns = ['timestamp', 'consumption'])
 app_iterator = iter(jq.compile('select(.consumers[].exe=="/usr/share/code/code")').input(text=data))
 for item in app_iterator:
-    # print(item['host']['timestamp'])
-    # print(item['consumers'][0])
     res = next((sub for sub in item['consumers'] if sub['exe'] == '/usr/share/code/code'), None)
     new_row = {'timestamp': item['host']['timestamp'], 'consumption': res['consumption']}
     df_app = df_app.append(new_row, ignore_index=True)
@@ -31,7 +29,6 @@ for item in app_iterator:
 df_app.drop_duplicates(keep='first', inplace=True)
 df_app['timestamp'] = df_app['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
 df_app['consumption'] = df_app['consumption'].apply(lambda x: x/1000000.0)
-print(df_app)
 
 
 energy_data['timestamp'] = energy_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
@@ -41,7 +38,6 @@ energy_data['uncore'] = energy_data['uncore'].apply(lambda x: x/1000000.0)
 # energy_data['dram'] = energy_data['socket_power'] - energy_data['core'] - energy_data['uncore']  # dram bug fix by calculating it
 energy_data['dram'] = energy_data['dram'].apply(lambda x: x/1000000.0)
 
-print(len(energy_data))
 
 plt.figure("Energy data")
 plt.plot(energy_data['timestamp'], energy_data['socket_power'], label="Socket power consumption")
@@ -83,17 +79,22 @@ for item in apps:
         # app_set.add(os.path.basename(os.path.normpath(item)))
         app_set.add(item)
 
-print(app_set)
 
+app_dict = dict()
+df_app_power = pd.DataFrame(columns=['app_name', 'consumption'])
+for app in app_set:
+    df_tmp = pd.DataFrame(columns = ['timestamp', 'consumption'])
+    for app_result in iter(jq.compile('select(.consumers[].exe=="' + app + '")').input(text=data)):
+        res = next((sub for sub in app_result['consumers'] if sub['exe'] == app), None)
+        new_row = {'timestamp': app_result['host']['timestamp'], 'consumption': res['consumption']}
+        df_tmp = df_tmp.append(new_row, ignore_index=True)
+    df_tmp.drop_duplicates(keep='first', inplace=True)
+    df_tmp['timestamp'] = df_tmp['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
+    df_tmp['consumption'] = df_tmp['consumption'].apply(lambda x: x/1000000.0)
+    app_dict[os.path.basename(os.path.normpath(app))] = df_tmp
 
-#app_dict = dict()
-#for app in app_set:
-#    df_tmp = pd.DataFrame(columns = ['timestamp', 'consumption'])
-#    for app_result in iter(jq.compile('select(.consumers[].exe=="' + app + '")').input(text=data)):
-#        res = next((sub for sub in app_result['consumers'] if sub['exe'] == app), None)
-#        new_row = {'timestamp': app_result['host']['timestamp'], 'consumption': res['consumption']}
-#        df_tmp = df_tmp.append(new_row, ignore_index=True)
-#    df_tmp.drop_duplicates(keep='first', inplace=True)
-#    app_dict[os.path.basename(os.path.normpath(app))] = df_tmp
+    df_app_power = df_app_power.append({'app_name': os.path.basename(os.path.normpath(app)), 'consumption': sum(df_tmp['consumption'])}, ignore_index=True)
 
-#print(app_dict)
+df_app_power = df_app_power.sort_values('consumption', ascending=False)
+df_app_power = df_app_power.reset_index(drop=True)
+print(df_app_power)

@@ -4,9 +4,13 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import jq
 import os
+import sys
+
+energy_data_file = sys.argv[1]
+system_data_file = sys.argv[2]
 
 # read in JSON as text as python json can't parse multiple JSON objects at a time
-with open('data/energy_data_beautified.json') as json_file:
+with open(energy_data_file) as json_file:
     data = json_file.read()
 
 energy_data = pd.DataFrame(columns = ['timestamp', 'socket_power', 'core', 'uncore', 'dram'])
@@ -47,7 +51,7 @@ plt.plot(energy_data['timestamp'], energy_data['dram'], label="DRAM power consum
 
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
-locs, labels = plt.xticks()
+# locs, labels = plt.xticks()
 plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
 plt.legend()
 plt.grid()
@@ -59,7 +63,7 @@ plt.legend()
 plt.grid()
 
 
-system_data = pd.read_csv("data/system_data.csv")
+system_data = pd.read_csv(system_data_file)
 system_data['timestamp'] = system_data['timestamp'].apply(lambda x: x / 1000.0)
 system_data['timestamp'] = system_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
 system_data['socket_idle'] = system_data['socket_idle'].apply(lambda x: 1 - (x / 100))
@@ -67,16 +71,20 @@ system_data['socket_idle'] = system_data['socket_idle'].apply(lambda x: 1 - (x /
 plt.figure("System data")
 plt.plot(system_data['timestamp'], system_data['socket_idle'], label="Non Idle")
 plt.plot(system_data['timestamp'], system_data['load_average'], label="Load Average")
+plt.plot(energy_data['timestamp'], energy_data['socket_power'], label="Socket power consumption")
+plt.xticks([system_data['timestamp'][0], system_data['timestamp'][len(system_data)-1]])
 plt.legend()
 plt.grid()
 
-# plt.show()
+print(energy_data)
+print(system_data)
+
+plt.show()
 
 app_set = set()
 apps = iter(jq.compile(".consumers[].exe").input(text=data))
 for item in apps:
     if item not in app_set and not item == "":
-        # app_set.add(os.path.basename(os.path.normpath(item)))
         app_set.add(item)
 
 
@@ -91,10 +99,10 @@ for app in app_set:
     df_tmp.drop_duplicates(keep='first', inplace=True)
     df_tmp['timestamp'] = df_tmp['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
     df_tmp['consumption'] = df_tmp['consumption'].apply(lambda x: x/1000000.0)
-    app_dict[os.path.basename(os.path.normpath(app))] = df_tmp
 
-    df_app_power = df_app_power.append({'app_name': os.path.basename(os.path.normpath(app)), 'consumption': sum(df_tmp['consumption'])}, ignore_index=True)
+    app_name = os.path.basename(os.path.normpath(app))
+    app_dict[app_name] = df_tmp
+    df_app_power = df_app_power.append({'app_name': app_name, 'consumption': sum(df_tmp['consumption'])}, ignore_index=True)
 
 df_app_power = df_app_power.sort_values('consumption', ascending=False)
 df_app_power = df_app_power.reset_index(drop=True)
-print(df_app_power)

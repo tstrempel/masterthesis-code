@@ -79,7 +79,7 @@ plt.grid()
 print(energy_data)
 print(system_data)
 
-plt.show()
+# plt.show()
 
 app_set = set()
 apps = iter(jq.compile(".consumers[].exe").input(text=data))
@@ -106,3 +106,13 @@ for app in app_set:
 
 df_app_power = df_app_power.sort_values('consumption', ascending=False)
 df_app_power = df_app_power.reset_index(drop=True)
+
+plt.figure("Most energy intesive applications")
+
+for i in range(1, 5):
+    plt.plot(app_dict[df_app_power.iloc[i]['app_name']]['timestamp'], app_dict[df_app_power.iloc[i]['app_name']]['consumption'], label=df_app_power.iloc[i]['app_name'])
+plt.xticks([system_data['timestamp'][0], system_data['timestamp'][len(system_data)-1]])
+plt.legend()
+plt.grid()
+
+plt.show()

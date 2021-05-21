@@ -6,42 +6,40 @@ import jq
 import os
 import sys
 
-energy_data_file = sys.argv[1]
-system_data_file = sys.argv[2]
-
 # read in JSON as text as python json can't parse multiple JSON objects at a time
-with open(energy_data_file) as json_file:
-    data = json_file.read()
+def read_in_scaphandre_json_file(file):
+    with open(file) as json_file:
+        data = json_file.read()
+    return data
+    
+def read_in_system_csv(file):
+    return pd.read_csv(file)
 
-energy_data = pd.DataFrame(columns = ['timestamp', 'socket_power', 'core', 'uncore', 'dram'])
-# iterate over JSON objects to fill the dataframe
-iterator = iter(jq.compile(".host").input(text=data))
-power_iterator = iter(jq.compile(".sockets[]").input(text=data))
+def process_socket_energy_data(data):
+    energy_data = pd.DataFrame(columns = ['timestamp', 'socket_power', 'core', 'uncore', 'dram'])
+    # iterate over JSON objects to fill the dataframe
+    iterator = iter(jq.compile(".host").input(text=data))
+    power_iterator = iter(jq.compile(".sockets[]").input(text=data))
 
-# TODO: rewrite for usage with multi-socket systems
-for item,power_item in zip(iterator, power_iterator):
-    new_row = {'timestamp': item['timestamp'], 'socket_power': item['consumption'], 'core': power_item['domains'][0]['consumption'], 'uncore': power_item['domains'][1]['consumption'], 'dram': power_item['domains'][2]['consumption']}
-    energy_data = energy_data.append(new_row, ignore_index=True)
+    # TODO: rewrite for usage with multi-socket systems
+    for item,power_item in zip(iterator, power_iterator):
+        new_row = {'timestamp': item['timestamp'], 'socket_power': item['consumption'], 'core': power_item['domains'][0]['consumption'], 'uncore': power_item['domains'][1]['consumption'], 'dram': power_item['domains'][2]['consumption']}
+        energy_data = energy_data.append(new_row, ignore_index=True)
+    
+    energy_data['timestamp'] = energy_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
+    energy_data['socket_power'] = energy_data['socket_power'].apply(lambda x: x/1000000.0)
+    energy_data['core'] = energy_data['core'].apply(lambda x: x/1000000.0)
+    energy_data['uncore'] = energy_data['uncore'].apply(lambda x: x/1000000.0)
+    # energy_data['dram'] = energy_data['socket_power'] - energy_data['core'] - energy_data['uncore']  # dram bug fix by calculating it
+    energy_data['dram'] = energy_data['dram'].apply(lambda x: x/1000000.0)
 
-df_app = pd.DataFrame(columns = ['timestamp', 'consumption'])
-app_iterator = iter(jq.compile('select(.consumers[].exe=="/usr/share/code/code")').input(text=data))
-for item in app_iterator:
-    res = next((sub for sub in item['consumers'] if sub['exe'] == '/usr/share/code/code'), None)
-    new_row = {'timestamp': item['host']['timestamp'], 'consumption': res['consumption']}
-    df_app = df_app.append(new_row, ignore_index=True)
+    return energy_data
 
-df_app.drop_duplicates(keep='first', inplace=True)
-df_app['timestamp'] = df_app['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
-df_app['consumption'] = df_app['consumption'].apply(lambda x: x/1000000.0)
+data = read_in_scaphandre_json_file(sys.argv[1])
+system_data = read_in_system_csv(sys.argv[2])
 
-
-energy_data['timestamp'] = energy_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
-energy_data['socket_power'] = energy_data['socket_power'].apply(lambda x: x/1000000.0)
-energy_data['core'] = energy_data['core'].apply(lambda x: x/1000000.0)
-energy_data['uncore'] = energy_data['uncore'].apply(lambda x: x/1000000.0)
-# energy_data['dram'] = energy_data['socket_power'] - energy_data['core'] - energy_data['uncore']  # dram bug fix by calculating it
-energy_data['dram'] = energy_data['dram'].apply(lambda x: x/1000000.0)
-
+energy_data = process_socket_energy_data(data)
+print(energy_data)
 
 plt.figure("Energy data")
 plt.plot(energy_data['timestamp'], energy_data['socket_power'], label="Socket power consumption")
@@ -56,14 +54,13 @@ plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_dat
 plt.legend()
 plt.grid()
 
-plt.figure("App data")
-plt.plot(energy_data['timestamp'], energy_data['socket_power'], label="Socket power consumption")
-plt.plot(df_app['timestamp'], df_app['consumption'], label="VS Code power consumption")
-plt.legend()
-plt.grid()
+# plt.figure("App data")
+# plt.plot(energy_data['timestamp'], energy_data['socket_power'], label="Socket power consumption")
+# plt.plot(df_app['timestamp'], df_app['consumption'], label="VS Code power consumption")
+# plt.legend()
+# plt.grid()
 
 
-system_data = pd.read_csv(system_data_file)
 system_data['timestamp'] = system_data['timestamp'].apply(lambda x: x / 1000.0)
 system_data['timestamp'] = system_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
 system_data['socket_idle'] = system_data['socket_idle'].apply(lambda x: 1 - (x / 100))

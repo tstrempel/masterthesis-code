@@ -6,6 +6,8 @@ import jq
 import os
 import sys
 
+from plotnine import ggplot, aes, geom_line
+
 # read in JSON as text as python json can't parse multiple JSON objects at a time
 def read_in_scaphandre_json_file(file):
     with open(file) as json_file:
@@ -81,6 +83,10 @@ print(energy_data)
 print("system data")
 print(system_data)
 
+energy_data.to_csv(r'plot/energy.csv', index=False)
+system_data.to_csv(r'plot/system.csv', index=False)
+
+
 # fig, ax = plt.subplots()
 plt.figure("Energy data")
 plt.plot(energy_data['timestamp'], energy_data['socket_power'], label="Socket power consumption")
@@ -90,22 +96,21 @@ plt.plot(energy_data['timestamp'], energy_data['dram'], label="DRAM power consum
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
 # locs, labels = plt.xticks()
-# plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
-# plt.gca().locator_params(axis='x', nbins=10)
+plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
+# plt.gca().xaxis.locator_params(nbins=10)
 plt.locator_params(axis='x', nbins=10)
 plt.legend()
 plt.grid()
 
-fig, ax = plt.subplots()
-# plt.figure("System data")
-ax.scatter(system_data['timestamp'], system_data['socket_idle'], label="Non Idle")
-ax.scatter(system_data['timestamp'], system_data['load_average'], label="Load Average")
-ax.scatter(energy_data['timestamp'], energy_data['socket_power'], label="Socket power consumption")
-# plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data-1)], system_data['timestamp'][0], system_data['timestamp'][len(system_data)-1]])
-#plt.xticks([energy_data['timestamp'][0], system_data['timestamp'][0]])
-#plt.legend()
-ax.grid(True)
 
+plt.figure("System data")
+plt.plot(system_data['timestamp'], system_data['socket_idle'], label="Non Idle")
+plt.plot(system_data['timestamp'], system_data['load_average'], label="Load Average")
+plt.plot(energy_data['timestamp'], energy_data['socket_power'], label="Socket power consumption")
+# plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data-1)], system_data['timestamp'][0], system_data['timestamp'][len(system_data)-1]])
+plt.xticks([energy_data['timestamp'][0], system_data['timestamp'][0]])
+plt.legend()
+plt.grid(True)
 
 app_dict, df_app_power = process_app_metrics(data)
 
@@ -117,4 +122,31 @@ plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_dat
 plt.legend()
 plt.grid()
 
+
+
+# plt.show()
+
+
+p = (ggplot() + 
+  geom_line(aes(x='timestamp', y='socket_power', group=1), data=energy_data, color='green') +
+  geom_line(aes(x='timestamp', y='socket_idle', group=1), data=system_data, color='blue'))
+
+fig = p.draw()
+fig.show
+
+plt.show()
+
+
+
+fig, ax1 = plt.subplots()
+color = 'tab:red'
+ax1.plot(system_data['timestamp'], system_data['socket_idle'], color=color)
+ax1.tick_params(axis='y', labelcolor=color)
+
+ax2 = ax1.twinx()
+color = 'tab:blue'
+ax2.set_ylabel('sin', color=color)  # we already handled the x-label with ax1
+ax2.plot(energy_data['timestamp'], energy_data['socket_power'], color=color)
+ax2.tick_params(axis='y', labelcolor=color)
+fig.tight_layout() 
 plt.show()

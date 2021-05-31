@@ -51,8 +51,8 @@ def process_app_metrics(data):
         if item not in app_set and not item == "":
             app_set.add(item)
 
-    app_dict = dict()
-    df_app_power = pd.DataFrame(columns=['app_name', 'consumption'])
+    apps = dict()
+    consumption_per_app = pd.DataFrame(columns=['app_name', 'consumption'])
     for app in app_set:
         df_tmp = pd.DataFrame(columns = ['timestamp', 'consumption'])
         for app_result in iter(jq.compile('select(.consumers[].exe=="' + app + '")').input(text=data)):
@@ -64,12 +64,12 @@ def process_app_metrics(data):
         df_tmp['consumption'] = df_tmp['consumption'].apply(lambda x: x/1000000.0)
 
         app_name = os.path.basename(os.path.normpath(app))
-        app_dict[app_name] = df_tmp
-        df_app_power = df_app_power.append({'app_name': app_name, 'consumption': sum(df_tmp['consumption'])}, ignore_index=True)
+        apps[app_name] = df_tmp
+        consumption_per_app = consumption_per_app.append({'app_name': app_name, 'consumption': sum(df_tmp['consumption'])}, ignore_index=True)
 
-    df_app_power = df_app_power.sort_values('consumption', ascending=False)
-    df_app_power = df_app_power.reset_index(drop=True)
-    return app_dict, df_app_power
+    consumption_per_app = consumption_per_app.sort_values('consumption', ascending=False)
+    consumption_per_app = consumption_per_app.reset_index(drop=True)
+    return apps, consumption_per_app
 
 def plot_biggest_consumers():
     return None
@@ -115,12 +115,14 @@ plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_dat
 plt.legend()
 plt.grid(True)
 
-app_dict, df_app_power = process_app_metrics(data)
+# apps store a dataframe value with all related measurements to an app 
+# consumption_per_app stores the sum of all energy measurements of an app
+apps, consumption_per_app = process_app_metrics(data)
 
 plt.figure("Most energy intesive applications")
 
 for i in range(1, 1):
-    plt.plot(app_dict[df_app_power.iloc[i]['app_name']]['timestamp'], app_dict[df_app_power.iloc[i]['app_name']]['consumption'], label=df_app_power.iloc[i]['app_name'])
+    plt.plot(apps[consumption_per_app.iloc[i]['app_name']]['timestamp'], apps[consumption_per_app.iloc[i]['app_name']]['consumption'], label=consumption_per_app.iloc[i]['app_name'])
 # plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
 plt.legend()
 plt.grid()

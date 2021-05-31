@@ -5,6 +5,7 @@ from datetime import datetime
 import jq
 import os
 import sys
+from scipy import stats
 
 from plotnine import ggplot, aes, geom_line
 
@@ -18,14 +19,14 @@ def read_in_system_csv(file):
     return pd.read_csv(file)
 
 def process_socket_energy_data(data):
-    energy_data = pd.DataFrame(columns = ['timestamp', 'socket_power', 'core', 'uncore', 'dram'])
+    energy_data = pd.DataFrame(columns = ['timestamp', 'socket_power', 'core', 'uncore', 'dram', 'average_load', 'cpu_load'])
     # iterate over JSON objects to fill the dataframe
     iterator = iter(jq.compile(".host").input(text=data))
     power_iterator = iter(jq.compile(".sockets[]").input(text=data))
 
     # TODO: rewrite for usage with multi-socket systems
     for item,power_item in zip(iterator, power_iterator):
-        new_row = {'timestamp': item['timestamp'], 'socket_power': item['consumption'], 'core': power_item['domains'][0]['consumption'], 'uncore': power_item['domains'][1]['consumption'], 'dram': power_item['domains'][2]['consumption']}
+        new_row = {'timestamp': item['timestamp'], 'socket_power': item['consumption'], 'core': power_item['domains'][0]['consumption'], 'uncore': power_item['domains'][1]['consumption'], 'dram': power_item['domains'][2]['consumption'], 'average_load': item['average_load'], 'cpu_load': item['cpu_load']}
         energy_data = energy_data.append(new_row, ignore_index=True)
     
     energy_data['timestamp'] = energy_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
@@ -74,20 +75,23 @@ def plot_biggest_consumers():
     return None
 
 data = read_in_scaphandre_json_file(sys.argv[1])
-system_data = read_in_system_csv(sys.argv[2])
 
 energy_data = process_socket_energy_data(data)
-system_data = process_system_metrics(system_data)
 print("energy data")
 print(energy_data)
-print("system data")
-print(system_data)
+print(len(energy_data))
 
 energy_data.to_csv(r'plot/energy.csv', index=False)
-system_data.to_csv(r'plot/system.csv', index=False)
 
+print("Person coefficient:")
+print(stats.pearsonr(energy_data['socket_power'], energy_data['cpu_load']))
+print("Kolmogorov-Smirnov test:")
+print(stats.kstest(energy_data['socket_power'], energy_data['cpu_load']))
+print("Kolmogorov-Smirnov 2-sample test:")
+print(stats.ks_2samp(energy_data['socket_power'], energy_data['cpu_load']))
+print("Linregress:")
+print(stats.linregress(energy_data['socket_power'], energy_data['cpu_load']))
 
-# fig, ax = plt.subplots()
 plt.figure("Energy data")
 plt.plot(energy_data['timestamp'], energy_data['socket_power'], label="Socket power consumption")
 plt.plot(energy_data['timestamp'], energy_data['core'], label="Core power consumption")
@@ -95,7 +99,6 @@ plt.plot(energy_data['timestamp'], energy_data['uncore'], label="Uncore power co
 plt.plot(energy_data['timestamp'], energy_data['dram'], label="DRAM power consumption")
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
-# locs, labels = plt.xticks()
 plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
 # plt.gca().xaxis.locator_params(nbins=10)
 plt.locator_params(axis='x', nbins=10)
@@ -104,11 +107,11 @@ plt.grid()
 
 
 plt.figure("System data")
-plt.plot(system_data['timestamp'], system_data['socket_idle'], label="Non Idle")
-plt.plot(system_data['timestamp'], system_data['load_average'], label="Load Average")
+plt.plot(energy_data['timestamp'], energy_data['cpu_load'], label="Non Idle")
+plt.plot(energy_data['timestamp'], energy_data['average_load'], label="Average Load")
 plt.plot(energy_data['timestamp'], energy_data['socket_power'], label="Socket power consumption")
-# plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data-1)], system_data['timestamp'][0], system_data['timestamp'][len(system_data)-1]])
-plt.xticks([energy_data['timestamp'][0], system_data['timestamp'][0]])
+plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
+# plt.xticks([energy_data['timestamp'][0], system_data['timestamp'][0]])
 plt.legend()
 plt.grid(True)
 
@@ -116,37 +119,12 @@ app_dict, df_app_power = process_app_metrics(data)
 
 plt.figure("Most energy intesive applications")
 
-for i in range(1, 5):
+for i in range(1, 1):
     plt.plot(app_dict[df_app_power.iloc[i]['app_name']]['timestamp'], app_dict[df_app_power.iloc[i]['app_name']]['consumption'], label=df_app_power.iloc[i]['app_name'])
-plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
+# plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
 plt.legend()
 plt.grid()
 
 
 
-# plt.show()
-
-
-p = (ggplot() + 
-  geom_line(aes(x='timestamp', y='socket_power', group=1), data=energy_data, color='green') +
-  geom_line(aes(x='timestamp', y='socket_idle', group=1), data=system_data, color='blue'))
-
-fig = p.draw()
-fig.show
-
-plt.show()
-
-
-
-fig, ax1 = plt.subplots()
-color = 'tab:red'
-ax1.plot(system_data['timestamp'], system_data['socket_idle'], color=color)
-ax1.tick_params(axis='y', labelcolor=color)
-
-ax2 = ax1.twinx()
-color = 'tab:blue'
-ax2.set_ylabel('sin', color=color)  # we already handled the x-label with ax1
-ax2.plot(energy_data['timestamp'], energy_data['socket_power'], color=color)
-ax2.tick_params(axis='y', labelcolor=color)
-fig.tight_layout() 
 plt.show()

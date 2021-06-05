@@ -36,6 +36,9 @@ def process_socket_energy_data(data):
     # energy_data['dram'] = energy_data['consumption'] - energy_data['core'] - energy_data['uncore']  # dram bug fix by calculating it
     energy_data['dram'] = energy_data['dram'].apply(lambda x: x/1000000.0)
 
+    # energy_data['consumption'] = energy_data['consumption'].rolling(7).mean()
+    # energy_data['consumption'] = energy_data['consumption'].iloc[::7, :]
+
     return energy_data
 
 def process_system_metrics(system_data):
@@ -62,6 +65,8 @@ def process_app_metrics(data):
         df_tmp.drop_duplicates(keep='first', inplace=True)
         df_tmp['timestamp'] = df_tmp['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
         df_tmp['consumption'] = df_tmp['consumption'].apply(lambda x: x/1000000.0)
+        # df_tmp = df_tmp.sort_values('timestamp', ascending=True)
+        df_tmp = df_tmp.reset_index(drop=True)
 
         app_name = os.path.basename(os.path.normpath(app))
         apps[app_name] = df_tmp
@@ -91,9 +96,15 @@ print("Kolmogorov-Smirnov 2-sample test:")
 print(stats.ks_2samp(energy_data['consumption'], energy_data['cpu_load']))
 print("Linregress:")
 print(stats.linregress(energy_data['consumption'], energy_data['cpu_load']))
+print("Core correlation:")
+print(stats.pearsonr(energy_data['consumption'], energy_data['core']))
+print("Uncore correlation")
+print(stats.pearsonr(energy_data['consumption'], energy_data['uncore']))
+print("DRAM correlation")
+print(stats.pearsonr(energy_data['consumption'], energy_data['dram']))
 
 plt.figure("Energy data")
-plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Socket power consumption")
+plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Total power consumption")
 plt.plot(energy_data['timestamp'], energy_data['core'], label="Core power consumption")
 plt.plot(energy_data['timestamp'], energy_data['uncore'], label="Uncore power consumption")
 plt.plot(energy_data['timestamp'], energy_data['dram'], label="DRAM power consumption")
@@ -109,9 +120,8 @@ plt.grid()
 plt.figure("System data")
 plt.plot(energy_data['timestamp'], energy_data['cpu_load'], label="Non Idle")
 plt.plot(energy_data['timestamp'], energy_data['average_load'], label="Average Load")
-plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Socket power consumption")
+plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Total power consumption")
 plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
-# plt.xticks([energy_data['timestamp'][0], system_data['timestamp'][0]])
 plt.legend()
 plt.grid(True)
 
@@ -120,13 +130,16 @@ plt.grid(True)
 apps, consumption_per_app = process_app_metrics(data)
 
 plt.figure("Most energy intesive applications")
+plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Total power consumption")
 
-for i in range(1, 1):
+for i in range(0, 5):
     plt.plot(apps[consumption_per_app.iloc[i]['app_name']]['timestamp'], apps[consumption_per_app.iloc[i]['app_name']]['consumption'], label=consumption_per_app.iloc[i]['app_name'])
-# plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
+    print(consumption_per_app.iloc[i]['app_name'])
+    print(apps[consumption_per_app.iloc[i]['app_name']])
+plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
 plt.legend()
 plt.grid()
 
-
+plt.figure("Scaphandre")
 
 plt.show()

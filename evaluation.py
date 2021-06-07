@@ -130,6 +130,7 @@ plt.grid(True)
 apps, consumption_per_app = process_app_metrics(data)
 
 plt.figure("Most energy intesive applications")
+# add this so that every data point is already on the plot, if not it will look weird later when programs which may not have a measurement in every step are added
 plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Total power consumption")
 
 for i in range(0, 5):

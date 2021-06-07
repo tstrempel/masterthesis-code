@@ -5,7 +5,7 @@
 # ( /home/tstrempel/git/scaphandre/target/release/scaphandre --no-header json -t 10 > energy_data.json ; for i in {1..10}; do date +"%T.%3N"; cat /proc/loadavg ; sleep 1; done > load_average.txt ) | parallel
 
 # timeout=20
-timeout=10800
+timeout=20
 step=1
 # scaphandre_step=500000000
 

@@ -117,11 +117,10 @@ plt.plot(energy_data['timestamp'], energy_data['dram'], label="DRAM power consum
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
 plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
-# plt.yticks(list(plt.yticks()[0]) + [15])
-# plt.gca().xaxis.locator_params(nbins=10)
+plt.ylim(0, 16)
+plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
 plt.locator_params(axis='x', nbins=10)
 plt.legend()
-plt.ylim(0, 16)
 plt.grid()
 
 
@@ -130,8 +129,9 @@ plt.plot(energy_data['timestamp'], energy_data['cpu_load'], label="Non Idle")
 plt.plot(energy_data['timestamp'], energy_data['average_load'], label="Average Load")
 plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Total power consumption")
 plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
-plt.legend()
 plt.ylim(0, 16)
+plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
+plt.legend()
 plt.grid(True)
 
 # apps store a dataframe value with all related measurements to an app 
@@ -147,8 +147,9 @@ for i in range(0, 5):
     print(consumption_per_app.iloc[i]['app_name'])
     print(apps[consumption_per_app.iloc[i]['app_name']])
 plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
-plt.legend()
 plt.ylim(0, 16)
+plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
+plt.legend()
 plt.grid()
 
 plt.show()

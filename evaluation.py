@@ -79,12 +79,18 @@ def process_app_metrics(data):
 def plot_biggest_consumers():
     return None
 
+def compute_energy_consumption(data):
+    return sum(data['consumption'] * 1.0)
+
 data = read_in_scaphandre_json_file(sys.argv[1])
 
 energy_data = process_socket_energy_data(data)
 print("energy data")
 print(energy_data)
 print(len(energy_data))
+
+print("Total power consumption in Joule")
+print(compute_energy_consumption(energy_data))
 
 energy_data.to_csv(r'plot/energy.csv', index=False)
 
@@ -111,9 +117,11 @@ plt.plot(energy_data['timestamp'], energy_data['dram'], label="DRAM power consum
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
 plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
+# plt.yticks(list(plt.yticks()[0]) + [15])
 # plt.gca().xaxis.locator_params(nbins=10)
 plt.locator_params(axis='x', nbins=10)
 plt.legend()
+plt.ylim(0, 16)
 plt.grid()
 
 
@@ -123,6 +131,7 @@ plt.plot(energy_data['timestamp'], energy_data['average_load'], label="Average L
 plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Total power consumption")
 plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
 plt.legend()
+plt.ylim(0, 16)
 plt.grid(True)
 
 # apps store a dataframe value with all related measurements to an app 
@@ -139,8 +148,7 @@ for i in range(0, 5):
     print(apps[consumption_per_app.iloc[i]['app_name']])
 plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
 plt.legend()
+plt.ylim(0, 16)
 plt.grid()
-
-plt.figure("Scaphandre")
 
 plt.show()

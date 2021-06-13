@@ -26,14 +26,15 @@ def process_socket_energy_data(data):
 
     # TODO: rewrite for usage with multi-socket systems
     for item,power_item in zip(iterator, power_iterator):
-        new_row = {'timestamp': item['timestamp'], 'consumption': item['consumption'], 'core': power_item['domains'][0]['consumption'], 'uncore': power_item['domains'][1]['consumption'], 'dram': power_item['domains'][2]['consumption'], 'average_load': item['average_load'], 'cpu_load': item['cpu_load']}
+        # domain consumption metrics are given in dram, core, uncore order
+        new_row = {'timestamp': item['timestamp'], 'consumption': item['consumption'], 'core': power_item['domains'][1]['consumption'], 'uncore': power_item['domains'][2]['consumption'], 'dram': power_item['domains'][0]['consumption'], 'average_load': item['average_load'], 'cpu_load': item['cpu_load']}
+        print(power_item['domains'])
         energy_data = energy_data.append(new_row, ignore_index=True)
     
     energy_data['timestamp'] = energy_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
     energy_data['consumption'] = energy_data['consumption'].apply(lambda x: x/1000000.0)
     energy_data['core'] = energy_data['core'].apply(lambda x: x/1000000.0)
     energy_data['uncore'] = energy_data['uncore'].apply(lambda x: x/1000000.0)
-    # energy_data['dram'] = energy_data['consumption'] - energy_data['core'] - energy_data['uncore']  # dram bug fix by calculating it
     energy_data['dram'] = energy_data['dram'].apply(lambda x: x/1000000.0)
 
     # energy_data['consumption'] = energy_data['consumption'].rolling(7).mean()

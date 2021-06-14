@@ -28,7 +28,6 @@ def process_socket_energy_data(data):
     for item,power_item in zip(iterator, power_iterator):
         # domain consumption metrics are given in dram, core, uncore order
         new_row = {'timestamp': item['timestamp'], 'consumption': item['consumption'], 'core': power_item['domains'][1]['consumption'], 'uncore': power_item['domains'][2]['consumption'], 'dram': power_item['domains'][0]['consumption'], 'average_load': item['average_load'], 'cpu_load': item['cpu_load']}
-        print(power_item['domains'])
         energy_data = energy_data.append(new_row, ignore_index=True)
     
     energy_data['timestamp'] = energy_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
@@ -36,9 +35,6 @@ def process_socket_energy_data(data):
     energy_data['core'] = energy_data['core'].apply(lambda x: x/1000000.0)
     energy_data['uncore'] = energy_data['uncore'].apply(lambda x: x/1000000.0)
     energy_data['dram'] = energy_data['dram'].apply(lambda x: x/1000000.0)
-
-    # energy_data['consumption'] = energy_data['consumption'].rolling(7).mean()
-    # energy_data['consumption'] = energy_data['consumption'].iloc[::7, :]
 
     return energy_data
 
@@ -145,12 +141,29 @@ plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Total powe
 
 for i in range(0, 5):
     plt.plot(apps[consumption_per_app.iloc[i]['app_name']]['timestamp'], apps[consumption_per_app.iloc[i]['app_name']]['consumption'], label=consumption_per_app.iloc[i]['app_name'])
-    print(consumption_per_app.iloc[i]['app_name'])
-    print(apps[consumption_per_app.iloc[i]['app_name']])
 plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
 plt.ylim(0, 16)
 plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
 plt.legend()
 plt.grid()
+
+energy_data_rolling_avg = energy_data.rolling(10).mean()
+energy_data_rolling_avg['timestamp'] = energy_data['timestamp']
+energy_data_rolling_avg = energy_data_rolling_avg.dropna()
+energy_data_rolling_avg = energy_data_rolling_avg.reset_index(drop=True)
+print(energy_data)
+print(energy_data_rolling_avg)
+plt.figure("Rolling average")
+plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['consumption'], label="Total power consumption")
+plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['core'], label="Core power consumption")
+plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['uncore'], label="Uncore power consumption")
+plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['dram'], label="DRAM power consumption")
+plt.xlabel("Timestamp")
+plt.ylabel("Power consumption in Watt")
+plt.xticks([energy_data_rolling_avg['timestamp'][0], energy_data_rolling_avg['timestamp'][len(energy_data_rolling_avg)-1]])
+plt.ylim(0, 16)
+plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
+plt.legend()
+plt.grid(True)
 
 plt.show()

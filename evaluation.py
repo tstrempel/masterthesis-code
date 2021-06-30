@@ -1,12 +1,6 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime
-import jq
-import os
 import sys
+import matplotlib.pyplot as plt
 from scipy import stats
-from plotnine import ggplot, aes, geom_line
 from processing_functions import *
 
 

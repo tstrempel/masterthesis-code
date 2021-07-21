@@ -13,17 +13,18 @@ energy_data = process_socket_energy_data(data)
 print("Total power consumption in Joule")
 print(compute_energy_consumption(energy_data, interval))
 print(compute_total_energy_consumption(energy_data))
-print(energy_data)
 
 energy_data.to_csv(r'plot/energy.csv', index=False)
+
+# apps store a dataframe value with all related measurements to an app 
+# consumption_per_app stores the sum of all energy measurements of an app
+apps, consumption_per_app = process_app_metrics(data, interval)
 
 print("Pearson coefficient:")
 print(stats.pearsonr(energy_data['consumption'], energy_data['cpu_load']))
 pearson = stats.pearsonr(energy_data['consumption'], energy_data['cpu_load'])
 print("Kolmogorov-Smirnov test:")
 print(stats.kstest(energy_data['consumption'], energy_data['cpu_load']))
-print("Test:")
-print(stats.kstest(np.random.normal(size=1000000), 'expon'))
 print("Kolmogorov-Smirnov 2-sample test:")
 print(stats.ks_2samp(energy_data['consumption'], energy_data['cpu_load']))
 print("Linregress:")
@@ -35,25 +36,25 @@ print(stats.pearsonr(energy_data['consumption'], energy_data['uncore']))
 print("DRAM correlation")
 print(stats.pearsonr(energy_data['consumption'], energy_data['dram']))
 
-print("Median")
+print("Median power consumption")
 print(statistics.median(energy_data['consumption']))
 
-plt.figure("Histogram")
-plt.hist(energy_data['consumption'])
-
-plt.figure("data")
+plt.figure("Data points")
+plt.title("Data points")
 plt.plot(energy_data['consumption'], energy_data['cpu_load'], 'o')
-# plt.show()
+plt.xlabel("Power consumption in Watt")
+plt.ylabel("CPU Load")
+plt.grid()
 
 plt.figure("Energy data")
 plt.title("Energy data")
-plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Total power consumption")
-plt.plot(energy_data['timestamp'], energy_data['core'], label="Core power consumption")
-plt.plot(energy_data['timestamp'], energy_data['uncore'], label="Uncore power consumption")
-plt.plot(energy_data['timestamp'], energy_data['dram'], label="DRAM power consumption")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'], label="Total power consumption")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['core'], label="Core power consumption")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['uncore'], label="Uncore power consumption")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['dram'], label="DRAM power consumption")
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
-plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
+plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
 plt.ylim(0, 16)
 plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
 plt.locator_params(axis='x', nbins=10)
@@ -75,11 +76,7 @@ plt.ylim(0, 1.1)
 plt.legend()
 plt.grid(True)
 
-# apps store a dataframe value with all related measurements to an app 
-# consumption_per_app stores the sum of all energy measurements of an app
-apps, consumption_per_app = process_app_metrics(data, interval)
-
-print("App")
+# print("App")
 # print(consumption_per_app.loc[consumption_per_app['app_name'] == "mprime"]['consumption'])
 
 plt.figure("Most energy intensive applications")

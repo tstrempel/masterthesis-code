@@ -64,13 +64,13 @@ plt.grid()
 
 plt.figure("System data")
 plt.title("System data\n Pearson: {:.2f}".format(pearson[0]))
-plt.plot(energy_data['timestamp'], energy_data['cpu_load'], label="CPU Load")
-# plt.plot(energy_data['timestamp'], energy_data['average_load'], label="Average Load 1min")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['cpu_load'].apply(lambda x: x/4.0), label="CPU Load")
+# plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['average_load'], label="Average Load 1min")
 # scale down with TDP
-plt.plot(energy_data['timestamp'], energy_data['consumption'].apply(lambda x: x/15.0), label="Total power consumption")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'].apply(lambda x: x/15.0), label="Total power consumption")
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption scaled down and CPU Load")
-plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
+plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
 plt.ylim(0, 1.1)
 # plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
 plt.legend()
@@ -82,24 +82,24 @@ plt.grid(True)
 plt.figure("Most energy intensive applications")
 plt.title("Most energy intensive applications")
 # add this so that every data point is already on the plot, if not it will look weird later when programs which may not have a measurement in every step are added
-plt.plot(energy_data['timestamp'], energy_data['consumption'], label="Total power consumption")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'], label="Total power consumption")
 
 for i in range(0, 5):
-    plt.plot(apps[consumption_per_app.iloc[i]['app_name']]['timestamp'], apps[consumption_per_app.iloc[i]['app_name']]['consumption'], label=consumption_per_app.iloc[i]['app_name'])
+    plt.plot(transform_timestamp(apps[consumption_per_app.iloc[i]['app_name']]['timestamp']), apps[consumption_per_app.iloc[i]['app_name']]['consumption'], label=consumption_per_app.iloc[i]['app_name'])
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
-plt.xticks([energy_data['timestamp'][0], energy_data['timestamp'][len(energy_data)-1]])
+plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
 plt.ylim(0, 16)
 plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
 plt.legend()
 plt.grid()
 
-print("pi")
-print(consumption_per_app.loc[consumption_per_app['app_name'] == "pi"]['consumption'])
+# print("pi")
+# print(consumption_per_app.loc[consumption_per_app['app_name'] == "pi"]['consumption'])
 
 # rolling average for better visualization
 energy_data_rolling_avg = energy_data.rolling(10).mean()
-energy_data_rolling_avg['timestamp'] = energy_data['timestamp']
+energy_data_rolling_avg['timestamp'] = transform_timestamp(energy_data['timestamp'])
 energy_data_rolling_avg = energy_data_rolling_avg.dropna()
 energy_data_rolling_avg = energy_data_rolling_avg.reset_index(drop=True)
 plt.figure("Rolling average")

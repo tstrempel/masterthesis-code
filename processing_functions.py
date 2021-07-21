@@ -25,7 +25,7 @@ def process_socket_energy_data(data):
         new_row = {'timestamp': item['timestamp'], 'consumption': item['consumption'], 'core': power_item['domains'][1]['consumption'], 'uncore': power_item['domains'][2]['consumption'], 'dram': power_item['domains'][0]['consumption'], 'average_load': item['average_load'], 'cpu_load': item['cpu_load']}
         energy_data = energy_data.append(new_row, ignore_index=True)
     
-    energy_data['timestamp'] = energy_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
+    # energy_data['timestamp'] = energy_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
     energy_data['consumption'] = energy_data['consumption'].apply(lambda x: x/1000000.0)
     energy_data['core'] = energy_data['core'].apply(lambda x: x/1000000.0)
     energy_data['uncore'] = energy_data['uncore'].apply(lambda x: x/1000000.0)
@@ -39,7 +39,7 @@ def process_system_metrics(system_data):
     system_data['socket_idle'] = system_data['socket_idle'].apply(lambda x: 1 - (x / 100))
     return system_data
 
-def process_app_metrics(data):
+def process_app_metrics(data, interval):
     app_set = set()
     apps = iter(jq.compile(".consumers[].exe").input(text=data))
     for item in apps:
@@ -55,14 +55,14 @@ def process_app_metrics(data):
             new_row = {'timestamp': app_result['host']['timestamp'], 'consumption': res['consumption']}
             df_tmp = df_tmp.append(new_row, ignore_index=True)
         df_tmp.drop_duplicates(keep='first', inplace=True)
-        df_tmp['timestamp'] = df_tmp['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
+        # df_tmp['timestamp'] = df_tmp['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])
         df_tmp['consumption'] = df_tmp['consumption'].apply(lambda x: x/1000000.0)
-        # df_tmp = df_tmp.sort_values('timestamp', ascending=True)
+        df_tmp = df_tmp.sort_values('timestamp', ascending=True)
         df_tmp = df_tmp.reset_index(drop=True)
 
         app_name = os.path.basename(os.path.normpath(app))
         apps[app_name] = df_tmp
-        consumption_per_app = consumption_per_app.append({'app_name': app_name, 'consumption': sum(df_tmp['consumption'])}, ignore_index=True)
+        consumption_per_app = consumption_per_app.append({'app_name': app_name, 'consumption': compute_energy_consumption(df_tmp, interval)}, ignore_index=True)
 
     consumption_per_app = consumption_per_app.sort_values('consumption', ascending=False)
     consumption_per_app = consumption_per_app.reset_index(drop=True)
@@ -71,5 +71,12 @@ def process_app_metrics(data):
 def plot_biggest_consumers():
     return None
 
-def compute_energy_consumption(data):
-    return sum(data['consumption'] * 1.0)
+def compute_energy_consumption(data, interval):
+    return sum(data['consumption'] * float(interval))
+
+def compute_total_energy_consumption(data):
+    # print(data['timestamp'].diff().fillna(1.0) * data['consumption'])
+    return sum(data['timestamp'].diff().fillna(1.0) * data['consumption'])
+
+def transform_timestamp(df):
+    return df.apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])

@@ -7,7 +7,7 @@ step=1
 step_nano=0
 # step_nano=100000000
 
-mkdir data
+mkdir data plots
 # get monitoring data
 # energy data, timestamps, load average, system stat (cpu util etc.)
 /home/tstrempel/git/scaphandre-custom/target/release/scaphandre --no-header json --timeout $timeout --step $step --step_nano $step_nano --max-top-consumers=200 > data/energy_data.json

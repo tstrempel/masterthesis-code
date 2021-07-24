@@ -19,4 +19,4 @@ sleep 1
 
 # process monitoring data
 js-beautify data/energy_data.json > data/energy_data_beautified.json
-python evaluation.py data/energy_data_beautified.json 1.0
+python evaluation.py data/energy_data_beautified.json plots 1.0

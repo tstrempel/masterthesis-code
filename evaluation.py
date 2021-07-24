@@ -6,7 +6,8 @@ import numpy as np
 import statistics
 
 data = read_in_scaphandre_json_file(sys.argv[1])
-interval = sys.argv[2]
+output_dir = sys.argv[2]
+interval = sys.argv[3]
 
 energy_data = process_socket_energy_data(data)
 
@@ -14,7 +15,7 @@ print("Total power consumption in Joule")
 print(compute_energy_consumption(energy_data, interval))
 print(compute_total_energy_consumption(energy_data))
 
-energy_data.to_csv(r'plots/energy.csv', index=False)
+energy_data.to_csv(output_dir + "/energy.csv", index=False)
 
 # apps store a dataframe value with all related measurements to an app 
 # consumption_per_app stores the sum of all energy measurements of an app
@@ -45,7 +46,7 @@ plt.plot(energy_data['consumption'], energy_data['cpu_load'], 'o')
 plt.xlabel("Power consumption in Watt")
 plt.ylabel("CPU Load")
 plt.grid()
-plt.savefig("plots/data_points.png")
+plt.savefig(output_dir + "/data_points.png")
 
 plt.figure("Energy data")
 plt.title("Energy data")
@@ -61,7 +62,7 @@ plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
 plt.locator_params(axis='x', nbins=10)
 plt.legend()
 plt.grid()
-plt.savefig("plots/energy_data.png")
+plt.savefig(output_dir + "/energy_data.png")
 
 plt.figure("System data")
 plt.title("System data\n Pearson: {:.2f}".format(pearson[0]))
@@ -76,7 +77,7 @@ plt.ylim(0, 1.1)
 # plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
 plt.legend()
 plt.grid(True)
-plt.savefig("plots/system_data.png")
+plt.savefig(output_dir + "/system_data.png")
 
 # print("App")
 # print(consumption_per_app.loc[consumption_per_app['app_name'] == "mprime"]['consumption'])
@@ -95,7 +96,7 @@ plt.ylim(0, 16)
 plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
 plt.legend()
 plt.grid()
-plt.savefig("plots/energy_intensive_apps.png")
+plt.savefig(output_dir + "/energy_intensive_apps.png")
 
 # print("pi")
 # print(consumption_per_app.loc[consumption_per_app['app_name'] == "pi"]['consumption'])
@@ -118,6 +119,6 @@ plt.ylim(0, 16)
 plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
 plt.legend()
 plt.grid(True)
-plt.savefig("plots/rolling_average.png")
+plt.savefig(output_dir + "/rolling_average.png")
 
 # plt.show()

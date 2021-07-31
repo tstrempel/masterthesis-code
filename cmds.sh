@@ -2,7 +2,7 @@
 
 # pip install jsbeautifier
 
-timeout=400
+timeout=10
 step=1
 step_nano=0
 # step_nano=100000000
@@ -19,4 +19,5 @@ sleep 1
 
 # process monitoring data
 js-beautify data/energy_data.json > data/energy_data_beautified.json
-python evaluation.py data/energy_data_beautified.json plots 1.0
+# parameters: input data, output dir for plots, time measurement step, TDP, cores
+python evaluation.py data/energy_data_beautified.json plots 1.0 15 4

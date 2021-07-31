@@ -14,7 +14,7 @@ def read_in_system_csv(file):
     return pd.read_csv(file)
 
 def process_socket_energy_data(data):
-    energy_data = pd.DataFrame(columns = ['timestamp', 'consumption', 'core', 'uncore', 'dram', 'average_load', 'cpu_load'])
+    energy_data = pd.DataFrame(columns = ['timestamp', 'consumption', 'core', 'uncore', 'dram', 'average_load', 'cpu_load', 'cpu_temp', 'mem_total', 'mem_free'])
     # iterate over JSON objects to fill the dataframe
     iterator = iter(jq.compile(".host").input(text=data))
     power_iterator = iter(jq.compile(".sockets[]").input(text=data))
@@ -22,7 +22,7 @@ def process_socket_energy_data(data):
     # TODO: rewrite for usage with multi-socket systems
     for item,power_item in zip(iterator, power_iterator):
         # domain consumption metrics are given in dram, core, uncore order
-        new_row = {'timestamp': item['timestamp'], 'consumption': item['consumption'], 'core': power_item['domains'][1]['consumption'], 'uncore': power_item['domains'][2]['consumption'], 'dram': power_item['domains'][0]['consumption'], 'average_load': item['average_load'], 'cpu_load': item['cpu_load']}
+        new_row = {'timestamp': item['timestamp'], 'consumption': item['consumption'], 'core': power_item['domains'][1]['consumption'], 'uncore': power_item['domains'][2]['consumption'], 'dram': power_item['domains'][0]['consumption'], 'average_load': item['average_load'], 'cpu_load': item['cpu_load'], 'cpu_temp': item['cpu_temp'], 'mem_total': item['mem_total'], 'mem_free': item['mem_free']}
         energy_data = energy_data.append(new_row, ignore_index=True)
     
     # energy_data['timestamp'] = energy_data['timestamp'].apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S.%f')[:-3])

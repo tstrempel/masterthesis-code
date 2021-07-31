@@ -2,12 +2,19 @@ import sys
 import matplotlib.pyplot as plt
 from scipy import stats
 from processing_functions import *
-import numpy as np
 import statistics
 
+# parameters: input data, output dir for plots, time measurement step, TDP, cores
+# beautified json file from scaphandre
 data = read_in_scaphandre_json_file(sys.argv[1])
+# output dir for plots
 output_dir = sys.argv[2]
+# time measurement step
 interval = sys.argv[3]
+# TDP (thermal design power)
+tdp = sys.argv[4]
+# number of cores (includes hyperthreading cores, so for a 2 core processor with 2 hyperthreads use 4)
+cores = sys.argv[5]
 
 energy_data = process_socket_energy_data(data)
 
@@ -20,6 +27,9 @@ energy_data.to_csv(output_dir + "/energy.csv", index=False)
 # apps store a dataframe value with all related measurements to an app 
 # consumption_per_app stores the sum of all energy measurements of an app
 apps, consumption_per_app = process_app_metrics(data, interval)
+
+mem_total = energy_data['mem_total'][0] * 1.0
+max_dram = energy_data['dram'].max()
 
 print("Pearson coefficient:")
 print(stats.pearsonr(energy_data['consumption'], energy_data['cpu_load']))
@@ -57,8 +67,8 @@ plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['dram'], lab
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
 plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
-plt.ylim(0, 16)
-plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
+plt.ylim(0, float(tdp)*1.1)
+plt.axhline(y=tdp, color='r', linestyle='-', label='TDP of 15W')
 plt.locator_params(axis='x', nbins=10)
 plt.legend()
 plt.grid()
@@ -66,10 +76,10 @@ plt.savefig(output_dir + "/energy_data.png")
 
 plt.figure("System data")
 plt.title("System data\n Pearson: {:.2f}".format(pearson[0]))
-plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['cpu_load'].apply(lambda x: x/4.0), label="CPU Load")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['cpu_load'].apply(lambda x: x/float(cores)), label="CPU Load")
 # plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['average_load'], label="Average Load 1min")
 # scale down with TDP
-plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'].apply(lambda x: x/15.0), label="Total power consumption")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'].apply(lambda x: x/float(tdp)), label="Total power consumption")
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption scaled down and CPU Load")
 plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
@@ -78,6 +88,30 @@ plt.ylim(0, 1.1)
 plt.legend()
 plt.grid(True)
 plt.savefig(output_dir + "/system_data.png")
+
+plt.figure("CPU Temperature over time")
+plt.title("CPU Temperature over time")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['cpu_temp'], label="CPU Temperature")
+plt.xlabel("Timestamp")
+plt.ylabel("CPU Temperature")
+plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
+plt.legend()
+plt.grid(True)
+plt.savefig(output_dir + "/temperature.png")
+
+plt.figure("Memory usage over time")
+plt.title("Memory usage over time")
+# plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['mem_free'].apply(lambda x: (mem_total - x) / 1073741824), label="Memory usage 1 -> 7.69 GiB")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['mem_free'].apply(lambda x: 1 - (x / mem_total)), label="Memory usage 1 -> 7.69 GiB")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['dram'].apply(lambda x: x / max_dram), label="DRAM power consumption 1 -> 2.92 W")
+plt.xlabel("Timestamp")
+plt.ylabel("Memory usage and DRAM power consumption to scale")
+plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
+plt.ylim(0, 1.1)
+plt.legend()
+plt.grid(True)
+plt.savefig(output_dir + "/memory_usage.png")
+
 
 # print("App")
 # print(consumption_per_app.loc[consumption_per_app['app_name'] == "mprime"]['consumption'])

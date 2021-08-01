@@ -122,7 +122,10 @@ plt.title("Most energy intensive applications")
 plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'], label="Total power consumption")
 
 for i in range(0, 5):
-    plt.plot(transform_timestamp(apps[consumption_per_app.iloc[i]['app_name']]['timestamp']), apps[consumption_per_app.iloc[i]['app_name']]['consumption'], label=consumption_per_app.iloc[i]['app_name'])
+    plt.plot( \
+        transform_timestamp(apps[consumption_per_app.iloc[i]['app_name']]['timestamp']), \
+        apps[consumption_per_app.iloc[i]['app_name']]['consumption'], \
+        label=consumption_per_app.iloc[i]['app_name'])
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
 plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])

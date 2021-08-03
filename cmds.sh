@@ -2,7 +2,7 @@
 
 # pip install jsbeautifier
 
-timeout=10
+timeout=720
 step=1
 step_nano=0
 # step_nano=100000000

@@ -52,9 +52,11 @@ print(statistics.median(energy_data['consumption']))
 
 plt.figure("Data points")
 plt.title("Data points")
-plt.plot(energy_data['consumption'], energy_data['cpu_load'], 'o')
+plt.plot(energy_data['consumption'], energy_data['cpu_load'].apply(lambda x: x/float(cores)), 'o')
 plt.xlabel("Power consumption in Watt")
 plt.ylabel("CPU Load")
+plt.xlim(0, float(tdp)+1)
+plt.ylim(0, 1)
 plt.grid()
 plt.savefig(output_dir + "/data_points.png")
 
@@ -75,8 +77,9 @@ plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['dram'], lab
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
 plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
-plt.ylim(0, float(tdp)*1.1)
-plt.axhline(y=tdp, color='r', linestyle='-', label='TDP of 15W')
+plt.ylim(0, float(tdp)+1.0)
+print(tdp)
+plt.axhline(y=float(tdp), color='r', linestyle='-', label='TDP of 15W')
 plt.locator_params(axis='x', nbins=10)
 plt.legend()
 plt.grid()
@@ -103,6 +106,7 @@ plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['cpu_temp'],
 plt.xlabel("Timestamp")
 plt.ylabel("CPU Temperature")
 plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
+plt.ylim(0, 100)
 plt.legend()
 plt.grid(True)
 plt.savefig(output_dir + "/temperature.png")
@@ -121,15 +125,15 @@ plt.grid(True)
 plt.savefig(output_dir + "/memory_usage.png")
 
 
-# print("App")
-# print(consumption_per_app.loc[consumption_per_app['app_name'] == "mprime"]['consumption'])
+print("Sorting")
+print(consumption_per_app.loc[consumption_per_app['app_name'] == "sorting"]['consumption'])
 
 plt.figure("Most energy intensive applications")
 plt.title("Most energy intensive applications")
 # add this so that every data point is already on the plot, if not it will look weird later when programs which may not have a measurement in every step are added
 plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'], label="Total power consumption")
 
-for i in range(0, 5):
+for i in range(0, 3):
     plt.plot( \
         transform_timestamp(apps[consumption_per_app.iloc[i]['app_name']]['timestamp']), \
         apps[consumption_per_app.iloc[i]['app_name']]['consumption'], \

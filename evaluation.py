@@ -15,14 +15,16 @@ interval = sys.argv[3]
 tdp = sys.argv[4]
 # number of cores (includes hyperthreading cores, so for a 2 core processor with 2 hyperthreads use 4)
 cores = sys.argv[5]
+# App
+extra_app = sys.argv[6]
 
 energy_data = process_socket_energy_data(data)
 
 print("Total power consumption in Joule")
 print(compute_energy_consumption(energy_data, interval))
-print(compute_total_energy_consumption(energy_data))
+# print(compute_total_energy_consumption(energy_data))
 
-energy_data.to_csv(output_dir + "/energy.csv", index=False)
+# energy_data.to_csv(output_dir + "/energy.csv", index=False)
 
 # apps store a dataframe value with all related measurements to an app 
 # consumption_per_app stores the sum of all energy measurements of an app
@@ -34,10 +36,6 @@ max_dram = energy_data['dram'].max()
 print("Pearson coefficient:")
 print(stats.pearsonr(energy_data['consumption'], energy_data['cpu_load']))
 pearson = stats.pearsonr(energy_data['consumption'], energy_data['cpu_load'])
-print("Kolmogorov-Smirnov test:")
-print(stats.kstest(energy_data['consumption'], energy_data['cpu_load']))
-print("Kolmogorov-Smirnov 2-sample test:")
-print(stats.ks_2samp(energy_data['consumption'], energy_data['cpu_load']))
 print("Linregress:")
 print(stats.linregress(energy_data['consumption'], energy_data['cpu_load']))
 print("Core correlation:")
@@ -78,7 +76,6 @@ plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
 plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
 plt.ylim(0, float(tdp)+1.0)
-print(tdp)
 plt.axhline(y=float(tdp), color='r', linestyle='-', label='TDP of 15W')
 plt.locator_params(axis='x', nbins=10)
 plt.legend()
@@ -124,14 +121,26 @@ plt.legend()
 plt.grid(True)
 plt.savefig(output_dir + "/memory_usage.png")
 
+print("Application: " + extra_app)
+print(consumption_per_app.loc[consumption_per_app['app_name'] == extra_app]['consumption'])
 
-print("Sorting")
-print(consumption_per_app.loc[consumption_per_app['app_name'] == "sorting"]['consumption'])
+plt.figure("Power consumption of application " + extra_app)
+plt.title("Power consumption of application " + extra_app)
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'], label="Total power consumption")
+plt.plot(transform_timestamp(apps[extra_app]['timestamp']), apps[extra_app]['consumption'], label=extra_app)
+plt.xlabel("Timestamp")
+plt.ylabel("Power consumption in Watt")
+plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
+plt.ylim(0, float(tdp)+1.0)
+plt.axhline(y=float(tdp), color='r', linestyle='-', label='TDP of 15W')
+plt.legend()
+plt.grid()
+plt.savefig(output_dir + "/extra_app.png")
 
 plt.figure("Most energy intensive applications")
 plt.title("Most energy intensive applications")
-# add this so that every data point is already on the plot, if not it will look weird later when programs which may not have a measurement in every step are added
 plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'], label="Total power consumption")
+# add this so that every data point is already on the plot, if not it will look weird later when programs which may not have a measurement in every step are added
 
 for i in range(0, 3):
     plt.plot( \
@@ -147,27 +156,25 @@ plt.legend()
 plt.grid()
 plt.savefig(output_dir + "/energy_intensive_apps.png")
 
-# print("pi")
-# print(consumption_per_app.loc[consumption_per_app['app_name'] == "pi"]['consumption'])
 
 # rolling average for better visualization
-energy_data_rolling_avg = energy_data.rolling(10).mean()
-energy_data_rolling_avg['timestamp'] = transform_timestamp(energy_data['timestamp'])
-energy_data_rolling_avg = energy_data_rolling_avg.dropna()
-energy_data_rolling_avg = energy_data_rolling_avg.reset_index(drop=True)
-plt.figure("Rolling average")
-plt.title("Rolling average")
-plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['consumption'], label="Total power consumption")
-plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['core'], label="Core power consumption")
-plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['uncore'], label="Uncore power consumption")
-plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['dram'], label="DRAM power consumption")
-plt.xlabel("Timestamp")
-plt.ylabel("Power consumption in Watt")
-plt.xticks([energy_data_rolling_avg['timestamp'][0], energy_data_rolling_avg['timestamp'][len(energy_data_rolling_avg)-1]])
-plt.ylim(0, 16)
-plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
-plt.legend()
-plt.grid(True)
-plt.savefig(output_dir + "/rolling_average.png")
+#energy_data_rolling_avg = energy_data.rolling(10).mean()
+#energy_data_rolling_avg['timestamp'] = transform_timestamp(energy_data['timestamp'])
+#energy_data_rolling_avg = energy_data_rolling_avg.dropna()
+#energy_data_rolling_avg = energy_data_rolling_avg.reset_index(drop=True)
+#plt.figure("Rolling average")
+#plt.title("Rolling average")
+#plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['consumption'], label="Total power consumption")
+#plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['core'], label="Core power consumption")
+#plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['uncore'], label="Uncore power consumption")
+#plt.plot(energy_data_rolling_avg['timestamp'], energy_data_rolling_avg['dram'], label="DRAM power consumption")
+#plt.xlabel("Timestamp")
+#plt.ylabel("Power consumption in Watt")
+#plt.xticks([energy_data_rolling_avg['timestamp'][0], energy_data_rolling_avg['timestamp'][len(energy_data_rolling_avg)-1]])
+#plt.ylim(0, 16)
+#plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
+#plt.legend()
+#plt.grid(True)
+#plt.savefig(output_dir + "/rolling_average.png")
 
 # plt.show()

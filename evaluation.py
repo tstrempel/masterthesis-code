@@ -31,7 +31,8 @@ print(compute_energy_consumption(energy_data, interval))
 apps, consumption_per_app = process_app_metrics(data, interval)
 
 mem_total = energy_data['mem_total'][0] * 1.0
-max_dram = energy_data['dram'].max()
+# max_dram = energy_data['dram'].max()
+max_dram = 2.92
 
 print("Pearson coefficient:")
 print(stats.pearsonr(energy_data['consumption'], energy_data['cpu_load']))
@@ -83,7 +84,8 @@ plt.grid()
 plt.savefig(output_dir + "/energy_data.png")
 
 plt.figure("System data")
-plt.title("System data\n Pearson: {:.2f}".format(pearson[0]))
+plt.title("System data")
+# plt.title("System data\n Pearson: {:.2f}".format(pearson[0]))
 plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['cpu_load'].apply(lambda x: x/float(cores)), label="CPU Load")
 # plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['average_load'], label="Average Load 1min")
 # scale down with TDP
@@ -150,8 +152,8 @@ for i in range(0, 3):
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
 plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
-plt.ylim(0, 16)
-plt.axhline(y=15, color='r', linestyle='-', label='TDP of 15W')
+plt.ylim(0, float(tdp)+1.0)
+plt.axhline(y=float(tdp), color='r', linestyle='-', label='TDP of 15W')
 plt.legend()
 plt.grid()
 plt.savefig(output_dir + "/energy_intensive_apps.png")

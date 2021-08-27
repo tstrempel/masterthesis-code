@@ -50,27 +50,6 @@ function run_pipeline_vtune {
     python evaluation.py "$1/energy_data_beautified.json" "$1" "$5" 15 4 'sorting' >> "$1/log.txt"    
 }
 
-function run_pipeline_vtune_nano {
-    # arg1: output dir
-    # arg2: sorting algorithm
-    # arg3: array size
-    # arg4: waiting period
-    mkdir "$1"
-    scaphandre --no-header json --timeout 86400 --step 0 --step_nano 500000000 --max-top-consumers=200 > "$1/energy_data.json" &
-    processid_scaphandre=$!
-    sleep $4
-    { vtune -collect hotspots -knob sampling-mode=hw -knob sampling-interval=0.5 -r "$1/hs_$2_$3" sorting "$2" "$3" 2>&1 "$1/log.txt"; } > "$1/log_vtune.txt" &
-    processid_sorting=$!
-
-    while [ -d "/proc/$processid_sorting" ]; do sleep 1; done
-    sleep $4
-    kill $processid_scaphandre
-
-    nice js-beautify "$1/energy_data.json" > "$1/energy_data_beautified.json"
-    python evaluation.py "$1/energy_data_beautified.json" "$1" 0.5 15 4 'sorting' >> "$1/log.txt"
-}
-
-
 # source ~/git/scaphandre-custom/init.sh
 # source /opt/intel/oneapi/setvars.sh
 

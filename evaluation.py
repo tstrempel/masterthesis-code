@@ -13,8 +13,8 @@ output_dir = sys.argv[2]
 interval = sys.argv[3]
 # TDP (thermal design power)
 tdp = sys.argv[4]
-# number of cores (includes hyperthreading cores, so for a 2 core processor with 2 hyperthreads use 4)
-cores = sys.argv[5]
+# number of threads (includes physical and hyperthreading cores, so for a 2 core processor with 2 hyperthreads use 4)
+threads = sys.argv[5]
 # App
 extra_app = sys.argv[6]
 
@@ -51,7 +51,7 @@ print(statistics.median(energy_data['consumption']))
 
 plt.figure("Data points")
 plt.title("Data points")
-plt.plot(energy_data['consumption'], energy_data['cpu_load'].apply(lambda x: x/float(cores)), 'o')
+plt.plot(energy_data['consumption'], energy_data['cpu_load'].apply(lambda x: x/float(threads)), 'o')
 plt.xlabel("Power consumption in Watt")
 plt.ylabel("CPU Load")
 plt.xlim(0, float(tdp)+1)
@@ -86,7 +86,7 @@ plt.savefig(output_dir + "/energy_data.png")
 plt.figure("System data")
 plt.title("System data")
 # plt.title("System data\n Pearson: {:.2f}".format(pearson[0]))
-plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['cpu_load'].apply(lambda x: x/float(cores)), label="CPU Load")
+plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['cpu_load'].apply(lambda x: x/float(threads)), label="CPU Load")
 # plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['average_load'], label="Average Load 1min")
 # scale down with TDP
 plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'].apply(lambda x: x/float(tdp)), label="Total power consumption")

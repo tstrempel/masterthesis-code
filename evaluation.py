@@ -129,8 +129,8 @@ plt.grid(True)
 plt.savefig(output_dir + "/memory_usage.png")
 
 print("Application: " + extra_app)
-print("Consumption: " + consumption_per_app.loc[consumption_per_app['app_name'] == extra_app]['consumption'])
-print("Measurements taken: " + len(apps[extra_app]))
+print(consumption_per_app.loc[consumption_per_app['app_name'] == extra_app])
+print("Measurements taken: " + str(len(apps[extra_app])))
 
 plt.figure("Power consumption of application " + extra_app)
 plt.title("Power consumption of application " + extra_app)

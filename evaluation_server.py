@@ -20,16 +20,14 @@ extra_app = sys.argv[6]
 
 energy_data = process_socket_energy_data(data)
 
-print("Total power consumption in Joule")
+print("Total energy consumption in Joule")
 print(compute_energy_consumption(energy_data, interval))
 
-print("Median energy consumption")
-print(energy_data.median("consumption"))
+print("Median energy consumption per interval")
+print(statistics.median(energy_data['consumption']))
 
-print("Average energy consumption")
-print(energy_data.mean("consumption"))
-
-
+print("Total measurements")
+print(len(energy_data))
 
 # print(compute_total_energy_consumption(energy_data))
 
@@ -39,15 +37,8 @@ print(energy_data.mean("consumption"))
 # consumption_per_app stores the sum of all energy measurements of an app
 apps, consumption_per_app = process_app_metrics(data, interval)
 
-plt.figure("Data points")
-plt.title("Data points")
-plt.plot(energy_data['consumption'], energy_data['cpu_load'].apply(lambda x: x/float(threads)), 'o')
-plt.xlabel("Power consumption in Watt")
-plt.ylabel("CPU Load")
-plt.xlim(0, float(tdp)+1)
-plt.ylim(0, 1)
-plt.grid()
-plt.savefig(output_dir + "/data_points.png")
+print("Application: " + extra_app)
+print("Measurements taken: " + str(len(apps[extra_app])))
 
 plt.figure("Energy data")
 plt.title("Energy data")
@@ -60,16 +51,3 @@ plt.axhline(y=float(tdp), color='r', linestyle='-', label='TDP of 15W')
 plt.legend()
 plt.grid()
 plt.savefig(output_dir + "/energy_data.png")
-
-plt.figure("Power consumption of application " + extra_app)
-plt.title("Power consumption of application " + extra_app)
-plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'], label="Total power consumption")
-plt.plot(transform_timestamp(apps[extra_app]['timestamp']), apps[extra_app]['consumption'], label=extra_app)
-plt.xlabel("Timestamp")
-plt.ylabel("Power consumption in Watt")
-plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
-plt.ylim(0, float(tdp)+1.0)
-plt.axhline(y=float(tdp), color='r', linestyle='-', label='TDP of 15W')
-plt.legend()
-plt.grid()
-plt.savefig(output_dir + "/extra_app.png")

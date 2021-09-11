@@ -20,8 +20,15 @@ extra_app = sys.argv[6]
 
 energy_data = process_socket_energy_data(data)
 
-print("Total power consumption in Joule")
+print("Total energy consumption in Joule")
 print(compute_energy_consumption(energy_data, interval))
+
+print("Median energy consumption per interval")
+print(statistics.median(energy_data['consumption']))
+
+print("Total measurements")
+print(len(energy_data))
+
 # print(compute_total_energy_consumption(energy_data))
 
 # energy_data.to_csv(output_dir + "/energy.csv", index=False)
@@ -46,8 +53,6 @@ print(stats.pearsonr(energy_data['consumption'], energy_data['uncore']))
 print("DRAM correlation")
 print(stats.pearsonr(energy_data['consumption'], energy_data['dram']))
 
-print("Median power consumption")
-print(statistics.median(energy_data['consumption']))
 
 plt.figure("Data points")
 plt.title("Data points")
@@ -124,7 +129,8 @@ plt.grid(True)
 plt.savefig(output_dir + "/memory_usage.png")
 
 print("Application: " + extra_app)
-print(consumption_per_app.loc[consumption_per_app['app_name'] == extra_app]['consumption'])
+print("Consumption: " + consumption_per_app.loc[consumption_per_app['app_name'] == extra_app]['consumption'])
+print("Measurements taken: " + len(apps[extra_app]))
 
 plt.figure("Power consumption of application " + extra_app)
 plt.title("Power consumption of application " + extra_app)

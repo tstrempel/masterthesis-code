@@ -19,7 +19,7 @@ function run_pipeline {
     kill $processid_scaphandre
 
     nice js-beautify "$1/energy_data.json" > "$1/energy_data_beautified.json"
-    python evaluation.py "$1/energy_data_beautified.json" "$1" "$5" 15 4 'sorting-O2' >> "$1/log.txt"
+    python evaluation.py "$1/energy_data_beautified.json" "$1" "$5" 15 4 'sorting-O2' > "$1/stats.txt"
 }
 
 function run_time {
@@ -47,7 +47,7 @@ function run_pipeline_vtune {
     kill $processid_scaphandre
 
     nice js-beautify "$1/energy_data.json" > "$1/energy_data_beautified.json"
-    python evaluation.py "$1/energy_data_beautified.json" "$1" "$5" 15 4 'sorting-O2' >> "$1/log.txt"    
+    python evaluation.py "$1/energy_data_beautified.json" "$1" "$5" 15 4 'sorting-O2' > "$1/stats.txt"    
 }
 
 # source ~/git/scaphandre-custom/init.sh
@@ -56,40 +56,40 @@ function run_pipeline_vtune {
 run_time selection_sort_1000 0 1000
 run_time selection_sort_2000 0 2000
 run_time selection_sort_4000 0 4000
-run_pipeline_vtune selection_sort_8000 0 8000 2 1
-run_pipeline_vtune selection_sort_16000 0 16000 5 1
-run_pipeline_vtune selection_sort_32000 0 32000 5 1
-run_pipeline_vtune selection_sort_64000 0 64000 5 1
-run_pipeline_vtune selection_sort_128000 0 128000 5 2
+run_pipeline selection_sort_8000 0 8000 2 1
+run_pipeline selection_sort_16000 0 16000 5 1
+run_pipeline selection_sort_32000 0 32000 5 1
+run_pipeline selection_sort_64000 0 64000 5 1
+run_pipeline selection_sort_128000 0 128000 5 2
 sleep 120
-run_pipeline_vtune selection_sort_256000 0 256000 5 2
+run_pipeline selection_sort_256000 0 256000 5 2
 sleep 120
 
 run_time insertion_sort_1000 1 1000
 run_time insertion_sort_2000 1 2000
 run_time insertion_sort_4000 1 4000
-run_pipeline_vtune insertion_sort_8000 1 8000 2 1
-run_pipeline_vtune insertion_sort_16000 1 16000 5 1
-run_pipeline_vtune insertion_sort_32000 1 32000 5 1
-run_pipeline_vtune insertion_sort_64000 1 64000 5 1
-run_pipeline_vtune insertion_sort_128000 1 128000 5 2
+run_pipeline insertion_sort_8000 1 8000 2 1
+run_pipeline insertion_sort_16000 1 16000 5 1
+run_pipeline insertion_sort_32000 1 32000 5 1
+run_pipeline insertion_sort_64000 1 64000 5 1
+run_pipeline insertion_sort_128000 1 128000 5 2
 sleep 120
-run_pipeline_vtune insertion_sort_256000 1 256000 5 2
+run_pipeline insertion_sort_256000 1 256000 5 2
 sleep 120
 
 run_time quick_sort_32000 2 32000
 run_time quick_sort_64000 2 64000
-run_pipeline_vtune quick_sort_128000 2 128000 3 1
-run_pipeline_vtune quick_sort_256000 2 256000 3 1
-run_pipeline_vtune quick_sort_512000 2 512000 3 1
-run_pipeline_vtune quick_sort_1024000 2 1024000 5 1
-run_pipeline_vtune quick_sort_2048000 2 2048000 5 1
+run_pipeline quick_sort_128000 2 128000 3 1
+run_pipeline quick_sort_256000 2 256000 3 1
+run_pipeline quick_sort_512000 2 512000 3 1
+run_pipeline quick_sort_1024000 2 1024000 5 1
+run_pipeline quick_sort_2048000 2 2048000 5 1
 sleep 120
 
 run_time qsort_32000 3 32000 
 run_time qsort_64000 3 64000
-run_pipeline_vtune qsort_128000 3 128000 3 1
-run_pipeline_vtune qsort_256000 3 256000 3 1
-run_pipeline_vtune qsort_512000 3 512000 3 1
-run_pipeline_vtune qsort_1024000 3 1024000 5 1
-run_pipeline_vtune qsort_2048000 3 2048000 5 1
+run_pipeline qsort_128000 3 128000 3 1
+run_pipeline qsort_256000 3 256000 3 1
+run_pipeline qsort_512000 3 512000 3 1
+run_pipeline qsort_1024000 3 1024000 5 1
+run_pipeline qsort_2048000 3 2048000 5 1

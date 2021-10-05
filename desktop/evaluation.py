@@ -73,8 +73,8 @@ plt.figure("Energy data")
 plt.title("Energy data")
 plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'], label="Total power consumption")
 plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['core'], label="Core power consumption")
-plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['uncore'], label="Uncore power consumption")
-plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['dram'], label="DRAM power consumption")
+#plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['uncore'], label="Uncore power consumption")
+#plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['dram'], label="DRAM power consumption")
 plt.xlabel("Timestamp")
 plt.ylabel("Power consumption in Watt")
 plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
@@ -112,18 +112,18 @@ plt.legend()
 plt.grid(True)
 plt.savefig(output_dir + "/temperature.png")
 
-plt.figure("Memory usage over time")
-plt.title("Memory usage over time")
+#plt.figure("Memory usage over time")
+#plt.title("Memory usage over time")
 # plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['mem_free'].apply(lambda x: (mem_total - x) / 1073741824), label="Memory usage 1 -> 7.69 GiB")
-plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['mem_free'].apply(lambda x: 1 - (x / mem_total)), label="Memory usage 1 -> 7.69 GiB")
-plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['dram'].apply(lambda x: x / max_dram), label="DRAM power consumption 1 -> 2.92 W")
-plt.xlabel("Timestamp")
-plt.ylabel("Memory usage and DRAM power consumption to scale")
-plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
-plt.ylim(0, 1.1)
-plt.legend()
-plt.grid(True)
-plt.savefig(output_dir + "/memory_usage.png")
+#plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['mem_free'].apply(lambda x: 1 - (x / mem_total)), label="Memory usage 1 -> 7.69 GiB")
+#plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['dram'].apply(lambda x: x / max_dram), label="DRAM power consumption 1 -> 2.92 W")
+#plt.xlabel("Timestamp")
+#plt.ylabel("Memory usage and DRAM power consumption to scale")
+#plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
+#plt.ylim(0, 1.1)
+#plt.legend()
+#plt.grid(True)
+#plt.savefig(output_dir + "/memory_usage.png")
 
 print("Application: " + extra_app)
 print(consumption_per_app.loc[consumption_per_app['app_name'] == extra_app])
@@ -142,24 +142,24 @@ plt.legend()
 plt.grid()
 plt.savefig(output_dir + "/extra_app.png")
 
-plt.figure("Most energy intensive applications")
-plt.title("Most energy intensive applications")
-plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'], label="Total power consumption")
+#plt.figure("Most energy intensive applications")
+#plt.title("Most energy intensive applications")
+#plt.plot(transform_timestamp(energy_data['timestamp']), energy_data['consumption'], label="Total power consumption")
 # add this so that every data point is already on the plot, if not it will look weird later when programs which may not have a measurement in every step are added
 
-for i in range(0, 3):
-    plt.plot( \
-        transform_timestamp(apps[consumption_per_app.iloc[i]['app_name']]['timestamp']), \
-        apps[consumption_per_app.iloc[i]['app_name']]['consumption'], \
-        label=consumption_per_app.iloc[i]['app_name'])
-plt.xlabel("Timestamp")
-plt.ylabel("Power consumption in Watt")
-plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
-plt.ylim(0, float(tdp)+1.0)
-plt.axhline(y=float(tdp), color='r', linestyle='-', label='TDP of 15W')
-plt.legend()
-plt.grid()
-plt.savefig(output_dir + "/energy_intensive_apps.png")
+#for i in range(0, 3):
+#    plt.plot( \
+#        transform_timestamp(apps[consumption_per_app.iloc[i]['app_name']]['timestamp']), \
+#        apps[consumption_per_app.iloc[i]['app_name']]['consumption'], \
+#        label=consumption_per_app.iloc[i]['app_name'])
+#plt.xlabel("Timestamp")
+#plt.ylabel("Power consumption in Watt")
+#plt.xticks([transform_timestamp(energy_data['timestamp'])[0], transform_timestamp(energy_data['timestamp'])[len(energy_data)-1]])
+#plt.ylim(0, float(tdp)+1.0)
+#plt.axhline(y=float(tdp), color='r', linestyle='-', label='TDP of 15W')
+#plt.legend()
+#plt.grid()
+#plt.savefig(output_dir + "/energy_intensive_apps.png")
 
 
 # rolling average for better visualization

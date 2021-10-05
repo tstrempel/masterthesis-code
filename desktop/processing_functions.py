@@ -25,15 +25,12 @@ def process_socket_energy_data(data):
     for item,power_item in zip(iterator, power_iterator):
         # domain consumption metrics are given in dram, core, uncore order
         new_row = {'timestamp': item['timestamp'], 'consumption': item['consumption'], \
-            'core': power_item['domains'][1]['consumption'], 'uncore': power_item['domains'][2]['consumption'], \
-            'dram': power_item['domains'][0]['consumption'], 'average_load': item['average_load'], \
+            'core': power_item['domains'][0]['consumption'], 'average_load': item['average_load'], \
             'cpu_load': item['cpu_load'], 'cpu_temp': item['cpu_temp'], 'mem_total': item['mem_total'], 'mem_free': item['mem_free']}
         energy_data = energy_data.append(new_row, ignore_index=True)
     
     energy_data['consumption'] = energy_data['consumption'].apply(lambda x: x/1000000.0)
     energy_data['core'] = energy_data['core'].apply(lambda x: x/1000000.0)
-    energy_data['uncore'] = energy_data['uncore'].apply(lambda x: x/1000000.0)
-    energy_data['dram'] = energy_data['dram'].apply(lambda x: x/1000000.0)
 
     return energy_data
 

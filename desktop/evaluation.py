@@ -37,9 +37,10 @@ print(len(energy_data))
 # consumption_per_app stores the sum of all energy measurements of an app
 apps, consumption_per_app = process_app_metrics(data, interval)
 
+print("Total energy consumption of applications")
+print(sum(consumption_per_app['consumption']))
+
 mem_total = energy_data['mem_total'][0] * 1.0
-# max_dram = energy_data['dram'].max()
-max_dram = 2.92
 
 print("Pearson coefficient:")
 pearson = stats.pearsonr(energy_data['consumption'], energy_data['cpu_load'])

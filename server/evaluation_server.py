@@ -20,13 +20,13 @@ extra_app = sys.argv[6]
 
 energy_data = process_socket_energy_data(data)
 
-print("Total energy consumption in Joule")
+print("Total energy consumption in Joule:")
 print(compute_energy_consumption(energy_data, interval))
 
-print("Median energy consumption per interval")
+print("Median energy consumption per interval:")
 print(statistics.median(energy_data['consumption']))
 
-print("Total measurements")
+print("Total scaphandre measurements:")
 print(len(energy_data))
 
 # print(compute_total_energy_consumption(energy_data))

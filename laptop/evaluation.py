@@ -20,13 +20,13 @@ extra_app = sys.argv[6]
 
 energy_data = process_socket_energy_data(data)
 
-print("Total energy consumption in Joule")
+print("Total energy consumption in Joule:")
 print(compute_energy_consumption(energy_data, interval))
 
-print("Median energy consumption per interval")
+print("Median energy consumption per interval:")
 print(statistics.median(energy_data['consumption']))
 
-print("Total measurements")
+print("Total scaphandre measurements:")
 print(len(energy_data))
 
 # print(compute_total_energy_consumption(energy_data))
@@ -37,8 +37,10 @@ print(len(energy_data))
 # consumption_per_app stores the sum of all energy measurements of an app
 apps, consumption_per_app = process_app_metrics(data, interval)
 
+print("Total energy consumption of all applications:")
+print(sum(consumption_per_app['consumption']))
+
 mem_total = energy_data['mem_total'][0] * 1.0
-# max_dram = energy_data['dram'].max()
 max_dram = 2.92
 
 print("Pearson coefficient:")
@@ -127,7 +129,7 @@ plt.savefig(output_dir + "/memory_usage.png")
 
 print("Application: " + extra_app)
 print(consumption_per_app.loc[consumption_per_app['app_name'] == extra_app])
-print("Measurements taken: " + str(len(apps[extra_app])))
+print("Measurements taken of application: " + str(len(apps[extra_app])))
 
 plt.figure("Power consumption of application " + extra_app)
 plt.title("Power consumption of application " + extra_app)

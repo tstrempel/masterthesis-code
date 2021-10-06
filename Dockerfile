@@ -20,7 +20,7 @@ WORKDIR masterthesis-code
 RUN pip install -r requirements.txt && mkdir /data && chmod u+x reproduction-docker.sh
 
 # 5. Download data
-RUN wget https://zenodo.org/record/5550996/files/masterthesis-data.zip
+RUN wget https://zenodo.org/record/5552510/files/masterthesis-data.zip
 
 # 6. Set reproduction script as entry point
 ENTRYPOINT ["/masterthesis-code/reproduction-docker.sh"] 

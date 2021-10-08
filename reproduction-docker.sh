@@ -5,6 +5,8 @@ cd /data
 unzip masterthesis-data.zip
 mv masterthesis-data/* .
 
+# list contains all measurements made with 1s interval
+# list2 contains all measurements made with 2s interval
 list="selection_sort_8000 selection_sort_16000 selection_sort_32000 selection_sort_64000 insertion_sort_8000 insertion_sort_16000 insertion_sort_32000 insertion_sort_64000 quick_sort_128000 quick_sort_256000 quick_sort_512000 quick_sort_1024000 quick_sort_2048000 qsort_128000 qsort_256000 qsort_512000 qsort_1024000 qsort_2048000"
 list2="selection_sort_128000 selection_sort_256000 insertion_sort_128000 insertion_sort_256000"
 

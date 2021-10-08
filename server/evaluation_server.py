@@ -29,10 +29,6 @@ print(statistics.median(energy_data['consumption']))
 print("Total scaphandre measurements:")
 print(len(energy_data))
 
-# print(compute_total_energy_consumption(energy_data))
-
-# energy_data.to_csv(output_dir + "/energy.csv", index=False)
-
 # apps store a dataframe value with all related measurements to an app 
 # consumption_per_app stores the sum of all energy measurements of an app
 apps, consumption_per_app = process_app_metrics(data, interval)

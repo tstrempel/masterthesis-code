@@ -10,9 +10,6 @@ def read_in_scaphandre_json_file(file):
         data = json_file.read()
     return data
     
-def read_in_system_csv(file):
-    return pd.read_csv(file)
-
 def process_socket_energy_data(data):
     energy_data = pd.DataFrame(columns = ['timestamp', 'consumption', \
         'core', 'uncore', 'dram', 'average_load', 'cpu_load', 'cpu_temp', \
@@ -59,8 +56,6 @@ def process_app_metrics(data, interval):
             # print(res)
             new_row = {'timestamp': app_result['host']['timestamp'], 'consumption': res['consumption']}
             df_tmp = df_tmp.append(new_row, ignore_index=True)
-        # print(app)
-        # print(transform_timestamp(df_tmp['timestamp']))
         df_tmp.drop_duplicates(keep='first', inplace=True)
         df_tmp['consumption'] = df_tmp['consumption'].apply(lambda x: x/1000000.0)
         df_tmp = df_tmp.sort_values('timestamp', ascending=True)
@@ -76,9 +71,6 @@ def process_app_metrics(data, interval):
 
 def compute_energy_consumption(data, interval):
     return sum(data['consumption'] * float(interval))
-
-def compute_total_energy_consumption(data):
-    return sum(data['timestamp'].diff().fillna(1.0) * data['consumption'])
 
 def transform_timestamp(df):
     return df.apply(lambda time: datetime.utcfromtimestamp(time).strftime('%H:%M:%S'))

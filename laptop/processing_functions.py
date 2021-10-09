@@ -18,7 +18,6 @@ def process_socket_energy_data(data):
     iterator = iter(jq.compile(".host").input(text=data))
     power_iterator = iter(jq.compile(".sockets[]").input(text=data))
 
-    # TODO: rewrite for usage with multi-socket systems
     for item,power_item in zip(iterator, power_iterator):
         # domain consumption metrics are given in dram, core, uncore order
         new_row = {'timestamp': item['timestamp'], 'consumption': item['consumption'], \

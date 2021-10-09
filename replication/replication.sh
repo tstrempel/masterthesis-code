@@ -9,7 +9,7 @@ function run_pipeline {
     # arg6: TDP
     # arg7: threads
     # arg8: application
-    echo ""
+    echo "$1"
     sleep 120
     mkdir "$1"
     scaphandre --no-header json --timeout 86400 --step "$5" --step_nano 0 --max-top-consumers=10 > "$1/energy_data.json" &
@@ -23,7 +23,7 @@ function run_pipeline {
     kill $processid_scaphandre
 
     nice js-beautify "$1/energy_data.json" > "$1/energy_data_beautified.json"
-    python evaluation.py "$1/energy_data_beautified.json" "$1" "$5" "$6" "$7" '$8' > "$1/stats.txt"
+    python evaluation.py "$1/energy_data_beautified.json" "$1" "$5" "$6" "$7" "$8" > "$1/stats.txt"
 }
 
 function run_time {
@@ -31,6 +31,7 @@ function run_time {
     # arg2: sorting algorithm
     # arg3: array size
     # arg4: application
+    echo "$1"
     sleep 10
     mkdir "$1"
     { time $4 "$2" "$3"; } 2> "$1/log.txt"

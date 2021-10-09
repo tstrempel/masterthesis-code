@@ -40,10 +40,10 @@ mem_total = energy_data['mem_total'][0] * 1.0
 max_dram = 2.92
 
 print("Pearson coefficient:")
-pearson = stats.pearsonr(energy_data['consumption'], energy_data['cpu_load'])
+pearson = stats.pearsonr(energy_data['consumption'], energy_data['cpu_load'].apply(lambda x: x/float(threads)))
 print(pearson)
 print("Linregress:")
-linregress = stats.linregress(energy_data['consumption'], energy_data['cpu_load'])
+linregress = stats.linregress(energy_data['consumption'], energy_data['cpu_load'].apply(lambda x: x/float(threads)))
 print(linregress)
 
 plt.figure("Data points")
@@ -59,7 +59,7 @@ plt.savefig(output_dir + "/data_points.png")
 plt.figure("Data points and linear regression")
 plt.title("Data points and linear regression")
 plt.plot(energy_data['consumption'], energy_data['cpu_load'].apply(lambda x: x/float(threads)), 'o', label='original data')
-plt.plot(energy_data['consumption'], linregress.intercept*.apply(lambda x: x/float(threads) + linregress.slope*energy_data['consumption']), 'r', label='fitted line')
+plt.plot(energy_data['consumption'], linregress.intercept + linregress.slope*energy_data['consumption'], 'r', label='fitted line')
 plt.xlabel("Power consumption in Watt")
 plt.ylabel("CPU Load")
 plt.xlim(0, float(tdp)+1)

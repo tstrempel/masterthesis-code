@@ -12,7 +12,7 @@ function run_pipeline {
     echo ""
     sleep 120
     mkdir "$1"
-    scaphandre --no-header json --timeout 86400 --step "$5" --step_nano 0 --max-top-consumers=200 > "$1/energy_data.json" &
+    scaphandre --no-header json --timeout 86400 --step "$5" --step_nano 0 --max-top-consumers=10 > "$1/energy_data.json" &
     processid_scaphandre=$!
     sleep $4
     { time $8 "$2" "$3"; } 2> "$1/log.txt" &

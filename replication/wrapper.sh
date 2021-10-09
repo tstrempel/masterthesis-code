@@ -39,6 +39,8 @@ function run_time {
 # $2: threads
 # $3: application, either 'sorting' or 'sorting-O2'
 
+source /scaphandre/init.sh
+
 run_time /data/selection_sort_1000 0 1000 $3
 run_time /data/selection_sort_2000 0 2000 $3
 run_time /data/selection_sort_4000 0 4000 $3
